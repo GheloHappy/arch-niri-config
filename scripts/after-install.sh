@@ -56,8 +56,8 @@ copy_config() {
 running_commands() {
   echo "Setting up user configuration..."
 
-  # Install JetBrains Mono Nerd Font (without unnecessary sudo)
-  paru -S --noconfirm --needed ttf-jetbrains-mono-nerd
+  # Install JetBrains Mono Nerd Font (run as user, not root)
+  sudo -u "${SUDO_USER:-$USER}" paru -S --noconfirm --needed ttf-jetbrains-mono-nerd
 
   # Create config directories
   mkdir_if_not_exists "$USER_HOME/.config/fastfetch"
@@ -91,6 +91,7 @@ running_commands() {
 check_root
 check_command paru
 check_command fastfetch
+check_command fish
 
 running_commands
 

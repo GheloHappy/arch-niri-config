@@ -37,7 +37,7 @@ OFFICIAL_PACKAGES=(
 # AUR packages
 AUR_PACKAGES=(
   brave-bin
-  quickshell-git
+  # quickshell
   noctalia-shell-git
 )
 
