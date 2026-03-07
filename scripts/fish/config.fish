@@ -13,6 +13,9 @@
 # Add Java binaries to your PATH
 # fish_add_path $JAVA_HOME/bin
 
+#If fish_add_path $Java home doesnt work
+#set -gx ANDROID_HOME $HOME/Android/Sdk/
+
 # Add SDK tools to PATH
 # fish_add_path $ANDROID_HOME/emulator
 # fish_add_path $ANDROID_HOME/platform-tools
