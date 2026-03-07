@@ -6,9 +6,19 @@
 
 ### OS: CachyOS (No Desktop)
 
-### Commands for initialization
+### Setups initialization
 - sudo pacman -Syu
 - sudo pacman -S --needed git base-devel
+
+cd ~
+
+git clone https://github.com/GheloHappy/arch-niri-config.git
+
+sudo chmod +x arch-niri-config/install.sh
+
+cd arch-niri-config
+
+sudo ./install.sh
 
 ---
 
