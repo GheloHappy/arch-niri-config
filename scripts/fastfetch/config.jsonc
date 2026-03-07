@@ -1,15 +1,14 @@
-
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json",
-    "logo": {
+  "logo": {
     "type": "kitty",
     "source": "~/arch-niri-config/icons/tomura-shigaraki.png",
     "width": 30,
     "height": 15,
     "padding": {
-        "top": 2,
-        "left": 2
-    }
+      "top": 2,
+      "left": 2,
+    },
   },
   "modules": [
     "title",
@@ -42,5 +41,5 @@
     // "break",
     // "colors"
     "break",
-  ]
+  ],
 }
