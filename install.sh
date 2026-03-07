@@ -40,6 +40,7 @@ OFFICIAL_PACKAGES=(
 AUR_PACKAGES=(
   brave-bin
   # quickshell
+  noctalia-qs
   noctalia-shell-git
 )
 
@@ -102,7 +103,7 @@ install_aur() {
 
 finalize() {
   echo "Enabling SDDM..."
-  systemctl enable sddm
+  systemctl enable --now sddm
 }
 
 #######################################
