@@ -1,10 +1,23 @@
-if status is-interactive
-    alias android-studio-x "Xwayland :1 &; set -x DISPLAY :1; android-studio"
-end
+#Android Studio android-studio-x option to run android studio
+# if status is-interactive
+#     function android-studio-x
+#         env _JAVA_AWT_WM_NONREPARENTING=1 GDK_BACKEND=x11 android-studio-x
+#     end
+# end
 
-#if not type -q node
-#    nvm use default --silent
-#end
+#Setting up default nvm node version
+# nvm use 24.14.0 >/dev/null
+
+# set -gx JAVA_HOME /usr/lib/jvm/java-17-openjdk
+
+# Add Java binaries to your PATH
+# fish_add_path $JAVA_HOME/bin
+
+# Add SDK tools to PATH
+# fish_add_path $ANDROID_HOME/emulator
+# fish_add_path $ANDROID_HOME/platform-tools
+# fish_add_path $ANDROID_HOME/cmdline-tools/latest/bin
+# fish_add_path $ANDROID_HOME/build-tools/latest
 
 set -U fish_greeting "MAH NINJA!"
 
@@ -34,10 +47,6 @@ end
 
 # Ensure the path never shortens
 set -gx fish_prompt_pwd_dir_length 0
-
-# nvm-fish integration - added automatically
-# You must call it on initialization or directory switching won't work
-#load_nvm >/dev/stderr
 
 fastfetch
 # This displays a small image once when you start the shell
