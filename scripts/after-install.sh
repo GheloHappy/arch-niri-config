@@ -65,10 +65,9 @@ running_commands() {
   mkdir_if_not_exists "$USER_HOME/.config/niri"
   mkdir_if_not_exists "$USER_HOME/.config/fish"
 
-  # Initialize fastfetch config if not exists
-  if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
-    sudo -u "${SUDO_USER:-$USER}" fastfetch --gen-config "$USER_HOME/.config/fastfetch/config.jsonc"
-  fi
+  # Overwrite fastfetch config with our custom config (no need to generate)
+  # We already have our own config, so skip generating and just copy ours
+
 
   # Copy config files
   copy_config "$REPO_DIR/scripts/kitty/kitty.conf" "$USER_HOME/.config/kitty/kitty.conf"

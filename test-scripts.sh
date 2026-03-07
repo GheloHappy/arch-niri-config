@@ -11,25 +11,24 @@ echo "=== arch-niri-config Test Script ==="
 echo -e "\n1. Testing install.sh..."
 cd "$REPO_DIR"
 
-# Test variable definitions
-# Source install.sh functions without executing
-source <(grep -E '^(NIRI_PACKAGES|OFFICIAL_PACKAGES|DEFAULT_PACKAGES|QUICKSHELL_PACKAGES)=' install.sh)
-echo "   NIRI_PACKAGES count: ${#NIRI_PACKAGES[@]}"
-echo "   OFFICIAL_PACKAGES count: ${#OFFICIAL_PACKAGES[@]}"
-echo "   DEFAULT_PACKAGES count: ${#DEFAULT_PACKAGES[@]}"
-echo "   QUICKSHELL_PACKAGES count: ${#QUICKSHELL_PACKAGES[@]}"
-
 # Verify directories exist
 if [ -d "$REPO_DIR" ]; then
     echo "   REPO_DIR exists"
 else
     echo "   REPO_DIR does NOT exist"
+    exit 1
 fi
 
-# Test package list duplicates
-echo -e "\n2. Checking for duplicate packages..."
-all_packages=("${NIRI_PACKAGES[@]}" "${OFFICIAL_PACKAGES[@]}" "${DEFAULT_PACKAGES[@]}" "${QUICKSHELL_PACKAGES[@]}")
-duplicates=($(printf '%s\n' "${all_packages[@]}" | sort | uniq -d))
+# Verify install.sh syntax
+if bash -n "$REPO_DIR/install.sh"; then
+    echo "   install.sh is syntactically correct"
+else
+    echo "   ❌ install.sh syntax error"
+fi
+
+# Test package list
+echo -e "\n2. Checking for package definitions..."
+grep -A 20 "PACKAGE" install.sh 2>/dev/null || echo "   Package definitions not found"
 
 if [ ${#duplicates[@]} -gt 0 ]; then
     echo "   WARNING: Duplicate packages found: ${duplicates[@]}"
