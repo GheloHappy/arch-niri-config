@@ -6,7 +6,8 @@ set -e
 echo "Setting up environment"
 
 # Define variables
-REPO_DIR="$(pwd)" # Current directory where the repo is cloned
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" # Root directory of the repo
+USER_HOME="$(eval echo ~${SUDO_USER:-$USER})" # Home directory of the user (handles sudo correctly)
 
 # Function to check for root privileges
 check_root() {
@@ -16,46 +17,81 @@ check_root() {
   fi
 }
 
-running_commands() {
-  echo "Setting up ..."
-
-  sudo paru -S ttf-jetbrains-mono-nerd                    #Setting up font
-  fastfetch --gen-config ~/.config/fastfetch/config.jsonc #initialization of custom fastfetch
-  chsh -s /usr/bin/fish                                   #changing shell to fish
-
-  cp ~/arch-niri-config/kitty/kitty.conf ~/.config/kitty/kitty.conf
-
-  #copying configs
-  cp ~/arch-niri-config/niri/config.kdl ~/.config/niri/config.kdl
-  cp ~/arch-niri-config/fish/config.fish ~/.config/fish/config.fish
-  cp ~/arch-niri-config/fastfetch/config.jsonc ~/.config/fastfetch/config.jsonc
-
-  exec fish
+# Function to check if a command is available
+check_command() {
+  local command="$1"
+  if ! command -v "$command" &> /dev/null; then
+    echo "Error: $command is not installed."
+    exit 1
+  fi
 }
-# Function to install AUR packages
-# install_aur() {
-#     echo "Installing AUR packages..."
-#     # Ensure base-devel is installed for makepkg
-#     pacman -S --noconfirm --needed base-devel git
-#
-#     # Iterate through AUR packages
-#     for pkg in "${AUR_PACKAGES[@]}"; do
-#         cd "$REPO_DIR"
-#         # Clone the AUR package repo to a temp directory
-#         git clone --branch="$pkg" --single-branch https://github.com/archlinux/aur.git "$pkg"
-#         cd "$pkg"
-#         # Check the PKGBUILD for malicious commands before running makepkg
-#         makepkg --noconfirm --needed -si
-#     done
-# }
+
+# Function to create directory if it doesn't exist
+mkdir_if_not_exists() {
+  local dir="$1"
+  if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+    echo "Created directory: $dir"
+  fi
+}
+
+# Function to copy config file with backup
+copy_config() {
+  local src="$1"
+  local dest="$2"
+  local dest_dir=$(dirname "$dest")
+  
+  mkdir_if_not_exists "$dest_dir"
+  
+  if [ -f "$dest" ]; then
+    local backup="$dest.backup.$(date +%Y%m%d_%H%M%S)"
+    mv "$dest" "$backup"
+    echo "Backed up existing config: $backup"
+  fi
+  
+  cp "$src" "$dest"
+  echo "Copied config: $src -> $dest"
+}
+
+running_commands() {
+  echo "Setting up user configuration..."
+
+  # Install JetBrains Mono Nerd Font (without unnecessary sudo)
+  paru -S --noconfirm --needed ttf-jetbrains-mono-nerd
+
+  # Create config directories
+  mkdir_if_not_exists "$USER_HOME/.config/fastfetch"
+  mkdir_if_not_exists "$USER_HOME/.config/kitty"
+  mkdir_if_not_exists "$USER_HOME/.config/niri"
+  mkdir_if_not_exists "$USER_HOME/.config/fish"
+
+  # Initialize fastfetch config if not exists
+  if [ ! -f "$USER_HOME/.config/fastfetch/config.jsonc" ]; then
+    sudo -u "${SUDO_USER:-$USER}" fastfetch --gen-config "$USER_HOME/.config/fastfetch/config.jsonc"
+  fi
+
+  # Copy config files
+  copy_config "$REPO_DIR/scripts/kitty/kitty.conf" "$USER_HOME/.config/kitty/kitty.conf"
+  copy_config "$REPO_DIR/scripts/niri/config.kdl" "$USER_HOME/.config/niri/config.kdl"
+  copy_config "$REPO_DIR/scripts/fish/config.fish" "$USER_HOME/.config/fish/config.fish"
+  copy_config "$REPO_DIR/scripts/fastfetch/config.jsonc" "$USER_HOME/.config/fastfetch/config.jsonc"
+
+  # Set correct permissions for user files
+  chown -R "${SUDO_USER:-$USER}":"${SUDO_USER:-$USER}" "$USER_HOME/.config"
+
+  # Change shell to fish (for the user, not root)
+  if [ -n "$SUDO_USER" ]; then
+    chsh -s /usr/bin/fish "$SUDO_USER"
+  else
+    chsh -s /usr/bin/fish
+  fi
+}
 
 # Main installation steps
 check_root
+check_command paru
+check_command fastfetch
 
 running_commands
-
-# If your repo contains PKGBUILD files directly, adjust the script to run
-# makepkg -si in the respective directories
-# install_aur
 
 echo "After install complete!"

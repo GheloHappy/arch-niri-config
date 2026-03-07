@@ -6,21 +6,15 @@ set -e
 echo "Starting Arch Linux package installation..."
 
 # Define variables
-REPO_DIR="$(pwd)" # Current directory where the repo is cloned
-#Niri requirements
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # Directory where script is located
+# Niri requirements
 NIRI_PACKAGES=("niri" "xdg-desktop-portal-gnome" "fuzzel" "alacritty" "matugen" "sddm")
-
-#Official packages also requirements for my dev eg: android emulator
+# Official packages also requirements for my dev eg: android emulator
 OFFICIAL_PACKAGES=("xorg-xwayland" "xwayland-satellite")
-
-#Default packages
-DEFAULT_PACKAGES=("kitty" "nemo" "fish" "fastfetch" "neovim" "fish" "udiskie" "polkit-kde-agent" "brave-bin")
-
-#Quickshell for Niri
+# Default packages
+DEFAULT_PACKAGES=("kitty" "nemo" "fish" "fastfetch" "neovim" "udiskie" "polkit-kde-agent" "brave-bin")
+# Quickshell for Niri
 QUICKSHELL_PACKAGES=("quickshell-git" "noctalia-shell-git")
-
-#AUR_PACKAGES=("niri " "package_name_aur2") # List of AUR packages
-#OFFICIAL_PACKAGES=("package_name_official1" "package_name_official2") # List of official packages
 
 # Function to check for root privileges
 check_root() {
@@ -30,67 +24,38 @@ check_root() {
   fi
 }
 
-#Paru is default if you use cachyos
-
-# Function to install official packages
-install_niri() {
-  echo "Installing niri packages..."
-  # Use pacman -S --noconfirm to install packages without interactive prompts
-  # --needed prevents reinstallation if packages are already installed
-  sudo paru -S --noconfirm --needed "${NIRI_PACKAGES[@]}"
+# Function to check if paru is available
+check_paru() {
+  if ! command -v paru &> /dev/null; then
+    echo "paru is not installed. Please install paru first."
+    exit 1
+  fi
 }
 
-install_official() {
-  echo "Installing official packages..."
-
-  sudo paru -S --noconfirm --needed "${DEFAULT_PACKAGES[@]}"
-}
-
-install_default() {
-  echo "Installing default packages..."
-
-  sudo paru -S --noconfirm --needed "${DEFAULT_PACKAGES[@]}"
-}
-
-install_quickshell() {
-  echo "Installing quickshell packages..."
-
-  sudo paru -S --noconfirm --needed "${QUICKSHELL_PACKAGES[@]}"
+# Function to install packages using paru
+install_packages() {
+  local package_list=("$@")
+  local package_count=${#package_list[@]}
+  
+  echo "Installing $package_count packages..."
+  paru -S --noconfirm --needed "${package_list[@]}"
 }
 
 final_commands() {
-  echo "Finalizing ..."
-
-  sudo systemctl enable --now sddm
+  echo "Finalizing installation..."
+  systemctl enable --now sddm
 }
-# Function to install AUR packages
-# install_aur() {
-#     echo "Installing AUR packages..."
-#     # Ensure base-devel is installed for makepkg
-#     pacman -S --noconfirm --needed base-devel git
-#
-#     # Iterate through AUR packages
-#     for pkg in "${AUR_PACKAGES[@]}"; do
-#         cd "$REPO_DIR"
-#         # Clone the AUR package repo to a temp directory
-#         git clone --branch="$pkg" --single-branch https://github.com/archlinux/aur.git "$pkg"
-#         cd "$pkg"
-#         # Check the PKGBUILD for malicious commands before running makepkg
-#         makepkg --noconfirm --needed -si
-#     done
-# }
 
 # Main installation steps
 check_root
+check_paru
 
-install_niri
-install_official
-install_default
-install_quickshell
+# Install all package groups
+install_packages "${NIRI_PACKAGES[@]}"
+install_packages "${OFFICIAL_PACKAGES[@]}"
+install_packages "${DEFAULT_PACKAGES[@]}"
+install_packages "${QUICKSHELL_PACKAGES[@]}"
+
 final_commands
-
-# If your repo contains PKGBUILD files directly, adjust the script to run
-# makepkg -si in the respective directories
-# install_aur
 
 echo "Installation complete!"
