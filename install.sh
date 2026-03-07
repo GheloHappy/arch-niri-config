@@ -35,10 +35,23 @@ check_paru() {
 }
 
 update_mirror() {
-  # Updating and configuring CachyOS mirrors
-  pacman -Sy archlinux-keyring cachyos-keyring
+  echo "Updating keyrings and mirrors..."
+
+  # Reinitialize pacman keys
+  pacman-key --init
+  pacman-key --populate archlinux cachyos
+
+  # Update keyrings
+  pacman -S --noconfirm archlinux-keyring cachyos-keyring
+
+  # Update mirrors
   cachyos-rate-mirrors
-  pacman -Scc
+
+  # Force refresh databases
+  pacman -Syy
+
+  # Clean cache
+  pacman -Scc --noconfirm
 }
 
 # Function to install packages using paru
