@@ -8,10 +8,13 @@ echo "Starting Arch Linux package installation..."
 # Define variables
 REPO_DIR="$(pwd)" # Current directory where the repo is cloned
 #Niri requirements
-NIRI_PACKAGES=("niri" "xdg-desktop-portal-gnome" "fuzzel" "alacritty" "sddm")
+NIRI_PACKAGES=("niri" "xdg-desktop-portal-gnome" "fuzzel" "alacritty" "matugen" "sddm")
+
+#Official packages also requirements for my dev eg: android emulator
+OFFICIAL_PACKAGES=("xorg-xwayland" "xwayland-satellite")
 
 #Default packages
-DEFAULT_PACKAGES=("kitty" "nemo" "fish" "fastfetch" "neovim" "brave-bin")
+DEFAULT_PACKAGES=("kitty" "nemo" "fish" "fastfetch" "neovim" "fish" "udiskie" "polkit-kde-agent" "brave-bin")
 
 #Quickshell for Niri
 QUICKSHELL_PACKAGES=("quickshell-git" "noctalia-shell-git")
@@ -37,6 +40,12 @@ install_niri() {
   sudo paru -S --noconfirm --needed "${NIRI_PACKAGES[@]}"
 }
 
+install_official() {
+  echo "Installing official packages..."
+
+  sudo paru -S --noconfirm --needed "${DEFAULT_PACKAGES[@]}"
+}
+
 install_default() {
   echo "Installing default packages..."
 
@@ -47,6 +56,12 @@ install_quickshell() {
   echo "Installing quickshell packages..."
 
   sudo paru -S --noconfirm --needed "${QUICKSHELL_PACKAGES[@]}"
+}
+
+final_commands() {
+  echo "Finalizing ..."
+
+  sudo systemctl enable --now sddm
 }
 # Function to install AUR packages
 # install_aur() {
@@ -69,8 +84,10 @@ install_quickshell() {
 check_root
 
 install_niri
+install_official
 install_default
 install_quickshell
+final_commands
 
 # If your repo contains PKGBUILD files directly, adjust the script to run
 # makepkg -si in the respective directories
