@@ -2,6 +2,11 @@ if status is-interactive
     alias android-studio-x "Xwayland :1 &; set -x DISPLAY :1; android-studio"
 end
 
+#uncomment for nvm to use default node
+# if not type -q node
+#     nvm use default --silent
+# end
+
 set -U fish_greeting "MAH NINJA!"
 
 function fish_prompt
