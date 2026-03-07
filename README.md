@@ -5,7 +5,7 @@
 ### OS: CachyOS (No Desktop)
 
 ### Commands for initialization
-- sudo pacman -Sy
+- sudo pacman -Syu
 - sudo pacman -S --needed git base-devel
 
-
+---
