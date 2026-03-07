@@ -32,6 +32,8 @@ OFFICIAL_PACKAGES=(
   neovim
   udiskie
   polkit-kde-agent
+  ripgrep
+  fd
 )
 
 # AUR packages
@@ -90,6 +92,8 @@ install_official() {
 install_aur() {
   echo "Installing AUR packages..."
   sudo -u "$SUDO_USER" paru -S --needed --noconfirm "${AUR_PACKAGES[@]}"
+  #ttf-jetbrains-mono-nerd font
+  sudo -u "$USER_USER" paru -S --noconfirm --needed ttf-jetbrains-mono-nerd
 }
 
 #######################################
