@@ -1,85 +1,116 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status
 set -e
 
 echo "Starting Arch Linux package installation..."
 
-# Define variables
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # Directory where script is located
-# Niri requirements
-NIRI_PACKAGES=("niri" "xdg-desktop-portal-gnome" "fuzzel" "alacritty" "matugen" "sddm")
-# Official packages also requirements for my dev eg: android emulator
-OFFICIAL_PACKAGES=("xorg-xwayland" "xwayland-satellite")
-# Default packages
-DEFAULT_PACKAGES=("kitty" "nemo" "fish" "fastfetch" "neovim" "udiskie" "polkit-kde-agent" "brave-bin")
-#Dev packages
-#DEV_PACKAGES={"docker"}
-# Quickshell for Niri
-QUICKSHELL_PACKAGES=("quickshell-git" "noctalia-shell-git")
+# Directory of this script
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Function to check for root privileges
+#######################################
+# PACKAGE GROUPS
+#######################################
+
+# Niri / Wayland
+NIRI_PACKAGES=(
+  niri
+  xdg-desktop-portal-gnome
+  fuzzel
+  alacritty
+  matugen
+  sddm
+)
+
+# Official repo packages
+OFFICIAL_PACKAGES=(
+  xorg-xwayland
+  xwayland-satellite
+  kitty
+  nemo
+  fish
+  fastfetch
+  neovim
+  udiskie
+  polkit-kde-agent
+)
+
+# AUR packages
+AUR_PACKAGES=(
+  brave-bin
+  quickshell-git
+  noctalia-shell-git
+)
+
+#######################################
+# CHECKS
+#######################################
+
 check_root() {
-  if [ "$EUID" -ne 0 ]; then
-    echo "Please run as root (use sudo)."
+  if [[ $EUID -ne 0 ]]; then
+    echo "Please run this script with sudo."
     exit 1
   fi
 }
 
-# Function to check if paru is available
 check_paru() {
   if ! command -v paru &>/dev/null; then
-    echo "paru is not installed. Please install paru first."
+    echo "paru is required but not installed."
+    echo "Install it first:"
+    echo "  git clone https://aur.archlinux.org/paru.git"
+    echo "  cd paru && makepkg -si"
     exit 1
   fi
 }
 
-update_mirror() {
+#######################################
+# SYSTEM UPDATE
+#######################################
+
+update_system() {
   echo "Updating keyrings and mirrors..."
 
-  # Reinitialize pacman keys
-  pacman-key --init
-  pacman-key --populate archlinux cachyos
-
-  # Update keyrings
   pacman -S --noconfirm archlinux-keyring cachyos-keyring
 
-  # Update mirrors
-  cachyos-rate-mirrors
+  if command -v cachyos-rate-mirrors &>/dev/null; then
+    cachyos-rate-mirrors
+  fi
 
-  # Force refresh databases
-  pacman -Syy
-
-  # Clean cache
-  pacman -Scc --noconfirm
+  pacman -Syyu --noconfirm
 }
 
-# Function to install packages using paru
-install_packages() {
-  local package_list=("$@")
-  local package_count=${#package_list[@]}
+#######################################
+# INSTALL FUNCTIONS
+#######################################
 
-  echo "Installing $package_count packages..."
-  paru -S --noconfirm --needed "${package_list[@]}"
+install_official() {
+  echo "Installing official repository packages..."
+  pacman -S --needed --noconfirm "${OFFICIAL_PACKAGES[@]}" "${NIRI_PACKAGES[@]}"
 }
 
-final_commands() {
-  echo "Finalizing installation..."
-  systemctl enable --now sddm
+install_aur() {
+  echo "Installing AUR packages..."
+  sudo -u "$SUDO_USER" paru -S --needed --noconfirm "${AUR_PACKAGES[@]}"
 }
 
-# Main installation steps
+#######################################
+# FINAL SETUP
+#######################################
+
+finalize() {
+  echo "Enabling SDDM..."
+  systemctl enable sddm
+}
+
+#######################################
+# MAIN
+#######################################
+
 check_root
 check_paru
 
-update_mirror
-
-# Install all package groups
-install_packages "${NIRI_PACKAGES[@]}"
-install_packages "${OFFICIAL_PACKAGES[@]}"
-install_packages "${DEFAULT_PACKAGES[@]}"
-install_packages "${QUICKSHELL_PACKAGES[@]}"
-
-final_commands
+update_system
+install_official
+install_aur
+finalize
 
 echo "Installation complete!"
